@@ -9,7 +9,7 @@ st.title("📊 Analyseur de Fichiers CSV")
 st.write("Chargez votre fichier pour visualiser les données instantanément.")
 
 # Zone d'upload du fichier
-uploaded_file = st.file_uploader("Choisissez un fichier CSV", type="csv")
+uploaded_file = st.file_uploader("Choisissez un fichier CSV", type="xls")
 
 if uploaded_file is not None:
     # Lecture des données
@@ -52,4 +52,5 @@ if uploaded_file is not None:
     st.plotly_chart(fig, use_container_width=True)
 
 else:
+
     st.info("💡 En attente d'un fichier CSV...")
