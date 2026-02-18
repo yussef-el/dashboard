@@ -18,7 +18,7 @@ st.set_page_config(page_title="SKF Data Dashboard", layout="wide")
 
 # 2. DESIGN : LOGO EN ARRIÈRE-PLAN (CSS)
 # REMPLACE CETTE URL par le lien vers ton fichier .jpg sur GitHub
-LOGO_URL = "https://raw.githubusercontent.com/yussef-el/dashboard/main/assets/votre_logo.jpg"
+LOGO_URL = "https://github.com/yussef-el/dashboard/blob/main/skf_logo.jpg"
 
 st.markdown(
     f"""
@@ -96,3 +96,4 @@ if file:
             ax.set_title(f"Rendu Statique : {y_col}")
             plt.xticks(rotation=45)
             st.pyplot(fig)
+
