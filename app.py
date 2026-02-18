@@ -16,44 +16,52 @@ def clean_column_names(df):
 
 st.set_page_config(page_title="SKF Industrial Dashboard", layout="wide")
 
-# 2. DESIGN GÉANT "S K F" EN ARRIÈRE-PLAN
+# 2. DESIGN DARK THEME + LETTRES GÉANTES BLANCHES
 st.markdown(
     """
     <style>
-    /* On force l'arrière-plan global */
+    /* Force le fond sombre sur toute l'application */
     .stApp {
-        background-color: #FFFFFF !important;
+        background-color: #0E1117 !important;
     }
 
-    /* Création du filigrane SKF géant */
+    /* Création des lettres S K F géantes en BLANC, GRAS et ITALIQUE */
     .stApp::before {
         content: "S K F";
         position: fixed;
-        top: 50%;
+        top: 55%;
         left: 50%;
-        transform: translate(-50%, -50%) rotate(-15deg);
-        font-size: 30vw; /* Taille immense */
-        font-weight: 900;
-        font-style: italic;
-        color: rgba(0, 82, 147, 0.07) !important; /* Bleu SKF très léger */
+        transform: translate(-50%, -50%) rotate(-10deg);
+        font-size: 35vw; /* Taille immense */
+        font-weight: 900; /* Très Gras */
+        font-style: italic; /* Italique */
+        color: rgba(255, 255, 255, 0.12) !important; /* Blanc avec légère transparence pour le style */
         z-index: 0;
         white-space: nowrap;
         pointer-events: none;
         font-family: 'Arial Black', sans-serif;
+        letter-spacing: -1vw;
     }
 
-    /* On rend les blocs transparents pour voir le fond */
+    /* Rend les blocs de contenu semi-transparents pour laisser passer le fond */
     [data-testid="stVerticalBlock"] > div {
-        background-color: rgba(255, 255, 255, 0.6) !important;
+        background-color: rgba(25, 30, 41, 0.7) !important;
+        padding: 15px;
         border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
-    /* Titre stylé */
+    /* Titre en blanc brillant */
     h1 {
-        color: #005293 !important;
+        color: #FFFFFF !important;
         font-weight: 800;
-        text-transform: uppercase;
         font-style: italic;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+
+    /* Ajustement des textes secondaires */
+    .stMarkdown, p, label {
+        color: #E0E0E0 !important;
     }
     </style>
     """,
@@ -66,22 +74,35 @@ st.title("📊 SKF Dashboard : Analyseur Industriel")
 file = st.file_uploader("📁 Déposez votre fichier Excel ou CSV", type=["csv", "xlsx", "xls"])
 
 if file:
-    # Gestion des moteurs de lecture
-    if file.name.endswith('.xls'):
-        df = pd.read_excel(file, engine='xlrd')
-    elif file.name.endswith('.xlsx'):
-        df = pd.read_excel(file, engine='openpyxl')
-    else:
-        df = pd.read_csv(file)
-    
-    df = clean_column_names(df)
-    
-    # Affichage des réglages
-    st.subheader("⚙️ Configuration")
-    x_col = st.pills("Axe X", options=df.columns, selection_mode="single", default=df.columns[0])
-    y_col = st.pills("Axe Y", options=[c for c in df.columns if c != x_col], selection_mode="single", default=df.columns[1] if len(df.columns)>1 else df.columns[0])
+    # Lecture des fichiers
+    try:
+        if file.name.endswith('.xls'):
+            df = pd.read_excel(file, engine='xlrd')
+        elif file.name.endswith('.xlsx'):
+            df = pd.read_excel(file, engine='openpyxl')
+        else:
+            df = pd.read_csv(file)
+        
+        df = clean_column_names(df)
+        st.success(f"✅ Fichier chargé avec succès")
+        
+        # Configuration des graphiques
+        st.divider()
+        col_controls = st.container()
+        with col_controls:
+            x_col = st.pills("Axe X (Horizontal)", options=df.columns, selection_mode="single", default=df.columns[0])
+            y_col = st.pills("Axe Y (Valeurs)", options=[c for c in df.columns if c != x_col], selection_mode="single", default=df.columns[1] if len(df.columns)>1 else df.columns[0])
 
-    # Graphique Plotly aux couleurs SKF
-    fig = px.bar(df, x=x_col, y=y_col, color_discrete_sequence=["#005293"])
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    st.plotly_chart(fig, use_container_width=True)
+        # Graphique Plotly avec thème sombre
+        if x_col and y_col:
+            fig = px.bar(df, x=x_col, y=y_col, color_discrete_sequence=["#005293"])
+            fig.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)', 
+                plot_bgcolor='rgba(0,0,0,0)',
+                font_color="white",
+                title_font_size=20
+            )
+            st.plotly_chart(fig, use_container_width=True)
+            
+    except Exception as e:
+        st.error(f"Erreur lors de la lecture : {e}")
