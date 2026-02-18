@@ -14,41 +14,46 @@ def clean_column_names(df):
     df.columns = new_columns
     return df
 
-st.set_page_config(page_title="SKF Data Dashboard", layout="wide")
+st.set_page_config(page_title="SKF Industrial Dashboard", layout="wide")
 
-# 2. DESIGN : LETTRES S K F EN BACKGROUND GÉANT
+# 2. DESIGN GÉANT "S K F" EN ARRIÈRE-PLAN
 st.markdown(
     """
     <style>
-    /* Création du texte géant en arrière-plan */
+    /* On force l'arrière-plan global */
+    .stApp {
+        background-color: #FFFFFF !important;
+    }
+
+    /* Création du filigrane SKF géant */
     .stApp::before {
         content: "S K F";
         position: fixed;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) rotate(-10deg);
-        font-size: 25vw; /* Occupe 25% de la largeur de l'écran */
+        transform: translate(-50%, -50%) rotate(-15deg);
+        font-size: 30vw; /* Taille immense */
         font-weight: 900;
         font-style: italic;
-        color: rgba(0, 82, 147, 0.05); /* Bleu SKF très clair pour ne pas gêner la lecture */
-        z-index: -1;
+        color: rgba(0, 82, 147, 0.07) !important; /* Bleu SKF très léger */
+        z-index: 0;
         white-space: nowrap;
+        pointer-events: none;
         font-family: 'Arial Black', sans-serif;
     }
 
-    /* Amélioration des blocs de contenu */
-    [data-testid="stVerticalBlock"] > div:has(div.stFrame) {
-        background: rgba(255, 255, 255, 0.8);
-        padding: 25px;
-        border-radius: 20px;
-        border: 1px solid rgba(0, 82, 147, 0.1);
-        box-shadow: 0 8px 32px rgba(0, 82, 147, 0.05);
+    /* On rend les blocs transparents pour voir le fond */
+    [data-testid="stVerticalBlock"] > div {
+        background-color: rgba(255, 255, 255, 0.6) !important;
+        border-radius: 15px;
     }
     
+    /* Titre stylé */
     h1 {
-        color: #005293;
-        border-bottom: 3px solid #005293;
-        padding-bottom: 10px;
+        color: #005293 !important;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-style: italic;
     }
     </style>
     """,
@@ -61,7 +66,7 @@ st.title("📊 SKF Dashboard : Analyseur Industriel")
 file = st.file_uploader("📁 Déposez votre fichier Excel ou CSV", type=["csv", "xlsx", "xls"])
 
 if file:
-    # Gestion des formats (Correction pour les anciens .xls)
+    # Gestion des moteurs de lecture
     if file.name.endswith('.xls'):
         df = pd.read_excel(file, engine='xlrd')
     elif file.name.endswith('.xlsx'):
@@ -70,34 +75,13 @@ if file:
         df = pd.read_csv(file)
     
     df = clean_column_names(df)
-    st.success(f"✅ Analyse du fichier : {file.name}")
     
-    with st.expander("🔍 Explorer les données brutes"):
-        st.dataframe(df, use_container_width=True)
+    # Affichage des réglages
+    st.subheader("⚙️ Configuration")
+    x_col = st.pills("Axe X", options=df.columns, selection_mode="single", default=df.columns[0])
+    y_col = st.pills("Axe Y", options=[c for c in df.columns if c != x_col], selection_mode="single", default=df.columns[1] if len(df.columns)>1 else df.columns[0])
 
-    st.divider()
-    
-    # 4. CONFIGURATION DES AXES (BOUTONS PILLS)
-    st.subheader("⚙️ Paramètres du Graphique")
-    
-    x_col = st.pills("Axe Horizontal (X)", options=df.columns, selection_mode="single", default=df.columns[0])
-    
-    # On filtre pour ne pas avoir X dans les choix de Y
-    y_choices = [c for c in df.columns if c != x_col]
-    y_col = st.pills("Axe Vertical (Y)", options=y_choices, selection_mode="single", default=y_choices[0] if y_choices else df.columns[0])
-
-    engine = st.radio("Style de rendu :", ["Plotly (Interactif)", "Matplotlib (Rapport)"], horizontal=True)
-
-    # 5. GÉNÉRATION DU GRAPHIQUE
-    if x_col and y_col:
-        if engine == "Plotly (Interactif)":
-            fig = px.bar(df, x=x_col, y=y_col, color=x_col, 
-                         template="plotly_white",
-                         color_discrete_sequence=["#005293", "#F2F2F2"]) # Palette aux couleurs SKF
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            fig, ax = plt.subplots(figsize=(10, 4))
-            ax.bar(df[x_col], df[y_col], color='#005293')
-            ax.set_title(f"Analyse : {y_col}", fontstyle='italic', color='#005293')
-            plt.xticks(rotation=45)
-            st.pyplot(fig)
+    # Graphique Plotly aux couleurs SKF
+    fig = px.bar(df, x=x_col, y=y_col, color_discrete_sequence=["#005293"])
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+    st.plotly_chart(fig, use_container_width=True)
