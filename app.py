@@ -18,7 +18,7 @@ st.set_page_config(page_title="Analyseur Pro CSV/Excel", layout="wide")
 
 # --- AJOUT DU BACKGROUND AVEC LE LOGO SKF ---
 # Remplace 'YOUR_SKF_LOGO_URL_HERE' par l'URL brute de ton logo SKF (depuis GitHub ou un hébergeur d'images)
-SKF_LOGO_URL = "https://raw.githubusercontent.com/yussef-el/dashboard/main/assets/skf_logo.png" # EXEMPLE, À CHANGER !
+SKF_LOGO_URL = "https://github.com/yussef-el/dashboard/blob/main/skf_logo.jpg" 
 
 st.markdown(
     f"""
@@ -96,3 +96,4 @@ if file:
             st.pyplot(fig)
     else:
         st.warning("Veuillez sélectionner une colonne pour chaque axe.")
+
