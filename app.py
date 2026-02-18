@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import unicodedata
 
 # --- CONFIGURATION DE LA PAGE ---
-st.set_page_config(page_title="Analyseur Pro CSV/Excel", layout="wide")
+st.set_page_config(page_title="SKF Analyseur CSV/Excel", layout="wide")
 
 # --- FONCTION POUR L'ANIMATION DE BACKGROUND ---
 def add_bg_animation():
@@ -90,3 +90,4 @@ if file:
         fig.patch.set_alpha(0.5) 
         plt.xticks(rotation=45)
         st.pyplot(fig)
+
