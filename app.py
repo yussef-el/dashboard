@@ -7,52 +7,55 @@ import unicodedata
 # --- CONFIGURATION DE LA PAGE ---
 st.set_page_config(page_title="SKF Analyseur CSV/Excel", layout="wide")
 
-# --- FONCTION POUR LE DARK THEME ET LES LETTRES FLOTTANTES ---
+# --- FONCTION POUR LE STYLE DARK ET ANIMATION PLEIN ÉCRAN ---
 def add_custom_style():
     st.markdown(
         """
         <style>
         /* 1. Fond Dark Theme Fixe */
         .stApp {
-            background-color: #0E1117; /* Noir bleuté standard Streamlit Dark */
-            background-attachment: fixed;
+            background-color: #0E1117;
+            overflow: hidden; /* Évite les barres de défilement dues aux lettres */
         }
 
         /* 2. Style des lettres SKF en BLEU */
         .water-letter {
             position: fixed;
             font-family: 'Arial Black', sans-serif;
-            font-size: 200px;
+            font-size: 250px; /* Taille augmentée */
             font-weight: 900;
-            color: rgba(0, 120, 255, 0.2); /* Bleu aquatique transparent */
-            text-shadow: 0 0 15px rgba(0, 120, 255, 0.1);
+            color: rgba(0, 120, 255, 0.15); /* Bleu subtil */
             z-index: 0;
             pointer-events: none;
             user-select: none;
+            white-space: nowrap;
         }
 
-        /* 3. Animation de glissement fluide (effet eau) */
-        @keyframes water-glide {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(80px, 40px) rotate(5deg); }
-            100% { transform: translate(0, 0) rotate(0deg); }
+        /* 3. Animation de glissement sur TOUT l'écran */
+        @keyframes drift {
+            0% { transform: translate(-20vw, -20vh) rotate(0deg); }
+            25% { transform: translate(60vw, 10vh) rotate(90deg); }
+            50% { transform: translate(80vw, 60vh) rotate(180deg); }
+            75% { transform: translate(10vw, 80vh) rotate(270deg); }
+            100% { transform: translate(-20vw, -20vh) rotate(360deg); }
         }
 
-        .letter-s { top: 10%; left: 10%; animation: water-glide 12s infinite ease-in-out; }
-        .letter-k { top: 45%; left: 40%; animation: water-glide 16s infinite ease-in-out; animation-delay: 1s; }
-        .letter-f { bottom: 15%; right: 15%; animation: water-glide 14s infinite ease-in-out; animation-delay: 2s; }
+        /* Délais et durées différents pour chaque lettre pour éviter l'effet "bloc" */
+        .letter-s { animation: drift 25s linear infinite; }
+        .letter-k { animation: drift 35s linear infinite reverse; animation-delay: -5s; }
+        .letter-f { animation: drift 30s linear infinite; animation-delay: -10s; }
 
         /* 4. Adaptation des conteneurs pour le Dark Theme */
         .stDataFrame, .stPlotlyChart, .stExpander, .stSelectbox, .stRadio, .stFileUploader {
-            background-color: rgba(38, 39, 48, 0.8) !important; /* Gris foncé transparent */
+            background-color: rgba(38, 39, 48, 0.85) !important;
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 20px;
             border-radius: 15px;
             position: relative;
             z-index: 10;
+            backdrop-filter: blur(5px); /* Effet de flou sous les boites */
         }
 
-        /* Texte en blanc pour le mode sombre */
         h1, h2, h3, p, label {
             color: #FFFFFF !important;
         }
@@ -70,7 +73,7 @@ def add_custom_style():
 
 add_custom_style()
 
-# --- FONCTIONS DE TRAITEMENT ---
+# --- LOGIQUE DE NETTOYAGE ---
 def clean_column_names(df):
     new_columns = []
     for col in df.columns:
@@ -82,7 +85,7 @@ def clean_column_names(df):
 
 # --- INTERFACE ---
 st.title("📊 SKF - Analyseur de Données")
-st.write("Mode sombre activé avec lettres bleues flottantes.")
+st.write("Les lettres parcourent maintenant l'intégralité de l'écran.")
 
 file = st.file_uploader("📂 Déposez votre fichier (CSV ou Excel)", type=["csv", "xlsx", "xls"])
 
@@ -93,9 +96,9 @@ if file:
         df = pd.read_excel(file)
     
     df = clean_column_names(df)
-    st.success(f"✅ Données de '{file.name}' prêtes !")
+    st.success(f"✅ Données chargées")
     
-    with st.expander("👁️ Aperçu des données"):
+    with st.expander("👁️ Aperçu"):
         st.dataframe(df, use_container_width=True)
 
     st.divider()
@@ -105,19 +108,16 @@ if file:
         x_col = st.selectbox("Axe X", options=df.columns)
         y_col = st.selectbox("Axe Y", options=df.columns)
     with c2:
-        engine = st.radio("Style de graphique", ["Plotly (Interactif)", "Matplotlib (Statique)"])
+        engine = st.radio("Moteur graphique", ["Plotly (Interactif)", "Matplotlib (Statique)"])
 
     if engine == "Plotly (Interactif)":
-        # Utilisation du template sombre pour Plotly
         fig = px.bar(df, x=x_col, y=y_col, color=x_col, template="plotly_dark")
         fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
         st.plotly_chart(fig, use_container_width=True)
     else:
-        # Style sombre pour Matplotlib
         plt.style.use('dark_background')
         fig, ax = plt.subplots()
         ax.bar(df[x_col], df[y_col], color='#0078FF')
-        plt.xticks(rotation=45)
         fig.patch.set_alpha(0.0)
         ax.set_facecolor('none')
         st.pyplot(fig)
